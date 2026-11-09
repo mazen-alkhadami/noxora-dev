@@ -9,13 +9,48 @@ import "./globals.css"
  */
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://noxora-dev.vercel.app"),
   title: {
-    default: "NEXORA DevHub",
+    default: "NEXORA DevHub — Developer Project & Task Management SaaS",
     template: "%s | NEXORA DevHub",
   },
   description:
-    "A modern project and task management platform for developers, freelancers, and independent creators.",
-  keywords: ["project management", "task management", "kanban", "developer tools"],
+    "Production-grade developer hub and SaaS workspace for managing multi-tenant projects, sprint tasks, interactive Kanban boards, calendars, and technical notes.",
+  keywords: [
+    "developer tools",
+    "project management",
+    "task management",
+    "kanban board",
+    "tiptap rich text",
+    "next.js 15",
+    "react 19",
+    "tailwind css",
+    "prisma orm",
+    "neon postgresql",
+    "auth.js v5",
+    "saas platform",
+  ],
+  authors: [{ name: "Mazen Al-Khadami", url: "https://github.com/mazen-alkhadami" }],
+  creator: "Mazen Al-Khadami",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://noxora-dev.vercel.app",
+    siteName: "NEXORA DevHub",
+    title: "NEXORA DevHub — Developer Project & Task Management SaaS",
+    description:
+      "Production-grade developer workspace featuring multi-tenant project workspaces, drag-and-drop Kanban, rich-text technical notes, and distributed rate-limited authentication.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NEXORA DevHub — Developer Project & Task Management SaaS",
+    description:
+      "Production-grade developer workspace featuring multi-tenant project workspaces, drag-and-drop Kanban, rich-text technical notes, and distributed rate-limited authentication.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
