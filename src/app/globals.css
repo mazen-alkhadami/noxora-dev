@@ -1,26 +1,232 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ─── Dark mode variant (class-based for next-themes) ─── */
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Theme mapping: CSS vars → Tailwind utility classes ─── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Fonts — system stack (self-hosted fonts added in deployment phase) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, monospace;
+
+  /* Core semantic colors */
+  --color-background:            var(--background);
+  --color-foreground:            var(--foreground);
+  --color-card:                  var(--card);
+  --color-card-foreground:       var(--card-foreground);
+  --color-popover:               var(--popover);
+  --color-popover-foreground:    var(--popover-foreground);
+  --color-primary:               var(--primary);
+  --color-primary-foreground:    var(--primary-foreground);
+  --color-secondary:             var(--secondary);
+  --color-secondary-foreground:  var(--secondary-foreground);
+  --color-muted:                 var(--muted);
+  --color-muted-foreground:      var(--muted-foreground);
+  --color-accent:                var(--accent);
+  --color-accent-foreground:     var(--accent-foreground);
+  --color-destructive:           var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:                var(--border);
+  --color-input:                 var(--input);
+  --color-ring:                  var(--ring);
+
+  /* NEXORA custom surface tokens */
+  --color-surface:               var(--surface);
+  --color-elevated:              var(--elevated);
+  --color-overlay:               var(--overlay);
+
+  /* Sidebar tokens */
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
+
+  /* Semantic status colors */
+  --color-success:               var(--success);
+  --color-success-foreground:    var(--success-foreground);
+  --color-warning:               var(--warning);
+  --color-warning-foreground:    var(--warning-foreground);
+  --color-info:                  var(--info);
+  --color-info-foreground:       var(--info-foreground);
+
+  /* Border radius scale (Phase 2 approved) */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   calc(var(--radius) - 2px);   /* 8px → 6px fallback */
+  --radius-lg:   var(--radius);               /* 8px */
+  --radius-xl:   calc(var(--radius) + 4px);   /* 12px */
+  --radius-2xl:  calc(var(--radius) + 8px);   /* 16px */
+  --radius-full: 9999px;
+
+  /* Shadow scale */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.18);
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.22);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.28);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.40);
+
+  /* Transition durations */
+  --duration-fast: 100ms;
+  --duration-base: 150ms;
+  --duration-slow: 250ms;
+  --duration-page: 300ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ═══════════════════════════════════════════════
+   LIGHT MODE TOKENS (default / :root)
+   Zinc neutral + Indigo accent
+═══════════════════════════════════════════════ */
+:root {
+  --radius: 0.5rem; /* 8px base */
+
+  /* Backgrounds */
+  --background:         oklch(1 0 0);             /* #ffffff */
+  --foreground:         oklch(0.141 0.005 285.82); /* zinc-950 */
+
+  /* Card */
+  --card:               oklch(1 0 0);
+  --card-foreground:    oklch(0.141 0.005 285.82);
+
+  /* Popover */
+  --popover:            oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.82);
+
+  /* Primary — Indigo 600 (#4f46e5) */
+  --primary:            oklch(0.511 0.262 276.97);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary */
+  --secondary:          oklch(0.967 0.001 286.37); /* zinc-100 */
+  --secondary-foreground: oklch(0.21 0.006 285.88); /* zinc-800 */
+
+  /* Muted */
+  --muted:              oklch(0.967 0.001 286.37);
+  --muted-foreground:   oklch(0.552 0.016 285.94); /* zinc-500 */
+
+  /* Accent (UI hover accent — distinct from brand accent) */
+  --accent:             oklch(0.967 0.001 286.37);
+  --accent-foreground:  oklch(0.21 0.006 285.88);
+
+  /* Destructive */
+  --destructive:        oklch(0.637 0.237 25.33);  /* red-500 */
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Borders & Inputs */
+  --border:             oklch(0.92 0.004 286.32);  /* zinc-200 */
+  --input:              oklch(0.92 0.004 286.32);
+  --ring:               oklch(0.511 0.262 276.97); /* indigo-600 */
+
+  /* NEXORA Custom Surfaces */
+  --surface:            oklch(1 0 0);
+  --elevated:           oklch(0.985 0.001 286.37); /* zinc-50 */
+  --overlay:            oklch(0.922 0.004 286.32); /* zinc-200 */
+
+  /* Status semantics */
+  --success:            oklch(0.527 0.154 150.07); /* green-600 */
+  --success-foreground: oklch(1 0 0);
+  --warning:            oklch(0.769 0.188 84.43);  /* amber-400 */
+  --warning-foreground: oklch(0.141 0.005 285.82);
+  --info:               oklch(0.546 0.215 262.88); /* blue-500 */
+  --info-foreground:    oklch(1 0 0);
+
+  /* Sidebar (light) */
+  --sidebar:                    oklch(0.985 0.001 286.37); /* zinc-50 */
+  --sidebar-foreground:         oklch(0.141 0.005 285.82);
+  --sidebar-primary:            oklch(0.511 0.262 276.97);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent:             oklch(0.95 0.002 286);
+  --sidebar-accent-foreground:  oklch(0.21 0.006 285.88);
+  --sidebar-border:             oklch(0.92 0.004 286.32);
+  --sidebar-ring:               oklch(0.511 0.262 276.97);
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE TOKENS
+   Deep zinc backgrounds + Indigo accent
+═══════════════════════════════════════════════ */
+.dark {
+  /* Backgrounds — deep zinc scale */
+  --background:         oklch(0.103 0.004 285.82); /* ~zinc-950 #09090b */
+  --foreground:         oklch(0.985 0.001 286.37); /* zinc-50 #fafafa */
+
+  /* Card */
+  --card:               oklch(0.15 0.004 285.82);  /* zinc-900 ~#18181b */
+  --card-foreground:    oklch(0.985 0.001 286.37);
+
+  /* Popover */
+  --popover:            oklch(0.17 0.004 285.82);
+  --popover-foreground: oklch(0.985 0.001 286.37);
+
+  /* Primary — Indigo 500 (#6366f1) */
+  --primary:            oklch(0.585 0.233 276.97);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary */
+  --secondary:          oklch(0.21 0.006 285.88);  /* zinc-800 #27272a */
+  --secondary-foreground: oklch(0.985 0.001 286.37);
+
+  /* Muted */
+  --muted:              oklch(0.21 0.006 285.88);
+  --muted-foreground:   oklch(0.632 0.013 284.3);  /* zinc-400 #a1a1aa */
+
+  /* Accent */
+  --accent:             oklch(0.21 0.006 285.88);
+  --accent-foreground:  oklch(0.985 0.001 286.37);
+
+  /* Destructive */
+  --destructive:        oklch(0.637 0.237 25.33);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Borders & Inputs */
+  --border:             oklch(0.21 0.006 285.88);  /* zinc-800 */
+  --input:              oklch(0.21 0.006 285.88);
+  --ring:               oklch(0.585 0.233 276.97); /* indigo-500 */
+
+  /* NEXORA Custom Surfaces */
+  --surface:            oklch(0.15 0.004 285.82);  /* zinc-900 */
+  --elevated:           oklch(0.17 0.004 285.82);  /* zinc-850 */
+  --overlay:            oklch(0.21 0.006 285.88);  /* zinc-800 */
+
+  /* Status semantics */
+  --success:            oklch(0.627 0.194 149.21); /* green-500 */
+  --success-foreground: oklch(0.103 0.004 285.82);
+  --warning:            oklch(0.769 0.188 84.43);  /* amber-400 */
+  --warning-foreground: oklch(0.103 0.004 285.82);
+  --info:               oklch(0.623 0.214 259.13); /* blue-400 */
+  --info-foreground:    oklch(0.103 0.004 285.82);
+
+  /* Sidebar (dark) — slightly lighter than page bg */
+  --sidebar:                    oklch(0.13 0.004 285.82);  /* ~zinc-925 */
+  --sidebar-foreground:         oklch(0.985 0.001 286.37);
+  --sidebar-primary:            oklch(0.585 0.233 276.97);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent:             oklch(0.21 0.006 285.88);
+  --sidebar-accent-foreground:  oklch(0.985 0.001 286.37);
+  --sidebar-border:             oklch(0.21 0.006 285.88);
+  --sidebar-ring:               oklch(0.585 0.233 276.97);
+}
+
+/* ─── Base styles ─── */
+@layer base {
+  * {
+    @apply border-border;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus ring consistency */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
 }

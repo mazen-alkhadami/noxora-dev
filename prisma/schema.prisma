@@ -1,0 +1,226 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ActivityType {
+  project_created
+  project_updated
+  project_deleted
+  task_created
+  task_updated
+  task_completed
+  task_deleted
+  note_created
+  note_updated
+  note_deleted
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id                   String           @id @default(cuid())
+  name                 String?
+  email                String           @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?          // Nullable for OAuth support (Phase 5)
+  sessionVersion       Int              @default(0)
+  title                String?          @default("Full-Stack Developer")
+  initials             String?          @default("AR")
+  migrationCompletedAt DateTime?       // Stamped when all migration batches succeed
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  // Domain Relations
+  projects             Project[]
+  tasks                Task[]
+  notes                Note[]
+  activities           Activity[]
+  preferences          UserPreferences?
+  migrationLogs        MigrationLog[]
+
+  // Auth.js (NextAuth) pre-allocated models for Phase 5
+  accounts             Account[]
+  sessions             Session[]
+
+  @@index([email])
+}
+
+model UserPreferences {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  defaultView         String   @default("dashboard") // "dashboard" | "kanban" | "tasks" | "calendar"
+  taskDensity         String   @default("comfortable") // "comfortable" | "compact"
+  confirmBeforeDelete Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  userId      String
+  name        String
+  description String?       @db.Text
+  status      ProjectStatus @default(ACTIVE)
+  color       String        @default("#6366f1")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+  notes       Note[]
+
+  // Compound unique constraint guarantees atomic, tenant-safe updates & lookups
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?  @db.Date // Strict calendar date (YYYY-MM-DD), avoiding timezone shifting
+  order       Float      @default(0.0) // Midpoint drag-and-drop reordering with O(1) single-row writes
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Compound unique constraint guarantees atomic, tenant-safe updates & lookups
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, projectId])
+  @@index([userId, dueDate])
+  @@index([userId, status, order])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  title     String
+  content   String   @db.Text // Rich-text HTML content from Tiptap editor
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Compound unique constraint guarantees atomic, tenant-safe updates & lookups
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, projectId])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  userId    String
+  type      ActivityType
+  title     String       // Human-readable summary
+  metadata  Json?        // Structured metadata: { entityId, previousStatus, newStatus, entityTitle }
+  timestamp DateTime     @default(now())
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, timestamp(sort: Desc)])
+}
+
+model MigrationLog {
+  id              String   @id @default(cuid())
+  userId          String
+  clientBackupKey String
+  stage           String   // "PREFERENCES" | "PROJECTS" | "TASKS" | "NOTES" | "COMPLETED"
+  batchIndex      Int      @default(0)
+  totalBatches    Int      @default(1)
+  projectsCount   Int      @default(0)
+  tasksCount      Int      @default(0)
+  notesCount      Int      @default(0)
+  status          String   // "IN_PROGRESS" | "COMPLETED" | "FAILED"
+  error           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Auth.js Required Tables (Pre-allocated for Phase 5) ─────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
